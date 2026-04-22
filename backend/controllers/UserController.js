@@ -1,5 +1,7 @@
 const User = require('../models/User')
 const bcrypt = require('bcrypt')
+const createUserToken = require('../helpers/create-user-token')
+
 
 module.exports = class UserController {
     static async register(req, res) {
@@ -16,7 +18,7 @@ module.exports = class UserController {
         }
 
         if (!password) {
-            res.status(422).json({message: 'Senhaé obrigatório'})
+            res.status(422).json({message: 'Senha é obrigatório'})
             return
         }
 
@@ -49,10 +51,7 @@ module.exports = class UserController {
        
         try{
             const newUser = await user.save()
-            res.status(201).json({
-                message: 'Usuário criado no Get Pet.',
-                newUser
-            })
+            await createUserToken(newUser, req, res)
         } catch (error) {
             res.status(503).json({message: error})
         }
