@@ -11,6 +11,10 @@ module.exports = class UserController {
             res.status(422).json({message: 'Nome é obrigatório'})
             return
         }
+        if(!email){
+            res.status(422).json({message: 'Email é obrigatório'})
+            return;
+        }
 
         if (!phone) {
             res.status(422).json({message: 'Telefone é obrigatório'})
@@ -55,5 +59,36 @@ module.exports = class UserController {
         } catch (error) {
             res.status(503).json({message: error})
         }
+    }
+    static async login(req, res){
+        const {email, password} = req.body
+
+         if(!email){
+            res.status(422).json({message: 'Email é obrigatório'})
+            return;
+        }
+         if (!password) {
+            res.status(422).json({message: 'Senha é obrigatório'})
+            return
+        }
+        const userExist = await User.findOne({email:email})
+
+        if(!userExist){
+            res.status(401).json({
+                message:'Não autorizado, sem registro'
+            })
+            return
+        }
+
+        const checkPassword = await bcrypt.compare(password, userExist.password)
+
+        if(!checkPassword) {
+            res.status(401).json({
+                message: 'Não autorizado, sem registro'
+            })
+            return
+        }
+
+        await createUserToken(userExist, req, res)
     }
 }
